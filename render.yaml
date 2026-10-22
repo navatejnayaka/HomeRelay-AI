@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: homerelay-ai-mcp
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start:mcp
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ALLOWED_ORIGINS
+        value: "https://navatejnayaka.github.io,http://localhost:3000,http://127.0.0.1:3000"
