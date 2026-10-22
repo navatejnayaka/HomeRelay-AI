@@ -1,0 +1,9 @@
+{
+  "name": "homerelay-ai-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HomeRelay AI household coordination demo",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
