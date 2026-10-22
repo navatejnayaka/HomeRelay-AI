@@ -1,0 +1,42 @@
+name: HomeRelay MCP smoke test
+
+on:
+  push:
+    paths:
+      - "mcp-server.mjs"
+      - "mcp-tools.js"
+      - "package.json"
+      - "tests/mcp-smoke-test.mjs"
+      - ".github/workflows/mcp-smoke-test.yml"
+  pull_request:
+    paths:
+      - "mcp-server.mjs"
+      - "mcp-tools.js"
+      - "package.json"
+      - "tests/mcp-smoke-test.mjs"
+      - ".github/workflows/mcp-smoke-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install
+      - name: Check module syntax
+        run: |
+          node --check server.js
+          node --check mcp-server.mjs
+          node --check mcp-tools.js
+          node --check tests/mcp-smoke-test.mjs
+      - name: Exercise MCP protocol and tools
+        run: npm test
