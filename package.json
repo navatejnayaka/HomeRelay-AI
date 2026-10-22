@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "start:mcp": "node mcp-server.mjs"
+    "start:mcp": "node mcp-server.mjs",
+    "test": "node tests/mcp-smoke-test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
