@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8f6">
+  <title>HomeRelay AI · MCP Console</title>
+  <style>
+    :root{--ink:#182c2b;--muted:#6d817b;--line:#dfe9e4;--paper:#f5f8f6;--white:#fff;--teal:#147e72;--teal-dark:#0e655c;--mint:#e4f4ee;--peach:#f8e8d9;--red:#b74843}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--teal-dark)}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;font-weight:650;background:var(--teal);color:white}button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:white;color:var(--ink);border:1px solid var(--line)}.subtle{background:var(--mint);color:var(--teal-dark)}.wrap{max-width:1120px;padding:28px 20px 56px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:28px}.brand{display:flex;align-items:center;gap:12px}.mark{width:43px;height:43px;display:grid;place-items:center;border-radius:14px;background:var(--teal);color:#fff;font-size:22px}.brand strong{display:block;font-size:18px}.brand small{color:var(--muted)}.status{padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:white;color:var(--muted);font-size:13px}.hero{margin-bottom:24px}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--teal);text-transform:uppercase}.hero h1{font-size:clamp(30px,5vw,46px);letter-spacing:-.04em;line-height:1.1;margin:8px 0}.hero p{color:var(--muted);max-width:720px;margin:0}.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:22px;min-width:0}.connect{grid-column:span 12}.draft{grid-column:span 7}.actions{grid-column:span 5}.output{grid-column:span 12}.card h2{font-size:17px;margin:0 0 6px}.muted{color:var(--muted);font-size:13px;margin:0 0 16px}.field{display:flex;gap:10px;flex-wrap:wrap}.field input{flex:1;min-width:240px}.input,textarea,select{width:100%;border:1px solid var(--line);background:#fbfdfc;border-radius:10px;padding:12px;color:var(--ink);outline-color:var(--teal)}textarea{min-height:105px;resize:vertical}.field input{width:auto}.tip{background:var(--mint);border-radius:11px;padding:10px 12px;margin-top:12px;font-size:12px;color:var(--teal-dark)}.stack{display:grid;gap:12px}.button-row{display:flex;flex-wrap:wrap;gap:8px}.tool-badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}.badge{font-size:12px;padding:6px 9px;background:#f4f7f5;border:1px solid var(--line);border-radius:7px;color:#415a54}.routine-select{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}.result{min-height:150px;max-height:440px;overflow:auto;background:#142b29;color:#e6f5ef;border-radius:12px;padding:15px;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}.callout{padding:12px 14px;border-radius:12px;background:#fff8e8;color:#75572b;border:1px solid #f1e2b8;font-size:13px;margin-bottom:14px}.footer{margin-top:20px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}.good{color:var(--teal-dark)}.bad{color:var(--red)}@media(max-width:760px){.draft,.actions{grid-column:span 12}.card{padding:17px}.field{display:grid}.field input{width:100%}.wrap{padding:18px 12px 36px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div class="brand"><div class="mark">⌂</div><div><strong>HomeRelay <span style="color:var(--teal)">AI</span></strong><small>MCP integration console</small></div></div>
+      <div class="status" id="connectionStatus">● Not connected</div>
+    </header>
+    <section class="hero">
+      <div class="eyebrow">Model Context Protocol · Streamable HTTP</div>
+      <h1>Connect tools to a calmer home.</h1>
+      <p>This console connects to HomeRelay’s self-hosted MCP server, discovers its tools, and calls them through JSON-RPC. Approve a plan only after reviewing the actions. The included planner is rule-based demo logic—not a live LLM or a direct Alexa+ account connection.</p>
+    </section>
+    <div class="callout">Demo data only: the server does not send real notifications, purchase items, or control physical devices. Its in-memory state may reset when the hosting service restarts.</div>
+    <section class="grid">
+      <article class="card connect">
+        <h2>1 · Connect to the MCP endpoint</h2>
+        <p class="muted">Paste the deployed service URL ending in <code>/mcp</code>. For local testing, use <code>http://localhost:10000/mcp</code>.</p>
+        <div class="field">
+          <input class="input" id="endpoint" type="url" placeholder="https://your-service.onrender.com/mcp" aria-label="MCP server URL">
+          <button id="connectBtn">Connect & discover tools</button>
+        </div>
+        <div class="tool-badges" id="toolBadges"><span class="badge">MCP 2025-11-25</span><span class="badge">Streamable HTTP</span><span class="badge">User approval before plan commit</span></div>
+        <div class="tip">If this is hosted on a free tier, the first connection can take a short while while the service wakes up.</div>
+      </article>
+      <article class="card draft">
+        <h2>2 · Draft a household plan</h2>
+        <p class="muted">Send a request through the MCP tool. Inspect its returned plan before approving it.</p>
+        <div class="stack">
+          <textarea id="requestText">Guests arrive at 7 PM. Ask Ravi to get snacks, prepare the guest room, and get the living room ready before they arrive.</textarea>
+          <div class="button-row"><button id="draftBtn" disabled>Draft plan</button><button id="approveBtn" class="subtle" disabled>Approve reviewed plan</button></div>
+        </div>
+        <div class="tip">Approval is a separate tool call, so drafting alone does not add commitments.</div>
+      </article>
+      <article class="card actions">
+        <h2>3 · Call HomeRelay tools</h2>
+        <p class="muted">These buttons invoke discovered MCP tools on the connected server.</p>
+        <div class="stack">
+          <button class="secondary actionBtn" data-tool="get_home_overview" disabled>Get household overview</button>
+          <button class="secondary actionBtn" data-tool="list_commitments" disabled>List Promise Ledger</button>
+          <button class="secondary actionBtn" data-tool="get_shopping_list" disabled>Get shopping list</button>
+          <div class="field">
+            <select class="routine-select" id="routineSelect" aria-label="Routine">
+              <option value="guest">Guest arrival</option><option value="quiet">Quiet evening</option><option value="out">Heading out</option>
+            </select>
+            <button class="secondary" id="simulateBtn" disabled>Simulate routine</button>
+          </div>
+        </div>
+      </article>
+      <article class="card output">
+        <h2>Tool results</h2>
+        <p class="muted" id="outputHint">Connect to the MCP endpoint to initialize the protocol and discover available tools.</p>
+        <pre class="result" id="output" aria-live="polite">Waiting for a connection…</pre>
+      </article>
+    </section>
+    <footer class="footer"><span>HomeRelay AI · self-hosted MCP demo</span><span><a href="./index.html">Back to HomeRelay app</a> · <a href="https://github.com/navatejnayaka/HomeRelay-AI">Source code</a></span></footer>
+  </main>
+  <script>
+    const protocolVersion = '2025-11-25';
+    let initialized = false;
+    let sequence = 0;
+    let availableTools = [];
+    let lastPlanId = null;
+    const endpointInput = document.getElementById('endpoint');
+    const statusNode = document.getElementById('connectionStatus');
+    const outputNode = document.getElementById('output');
+    const outputHint = document.getElementById('outputHint');
+    const badgeNode = document.getElementById('toolBadges');
+    const savedEndpoint = localStorage.getItem('homerelay-mcp-endpoint');
+    if (savedEndpoint) endpointInput.value = savedEndpoint;
+
+    function setStatus(text, kind) {
+      statusNode.textContent = '● ' + text;
+      statusNode.className = 'status' + (kind ? ' ' + kind : '');
+    }
+    function show(value, hint) {
+      outputNode.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+      outputHint.textContent = hint || 'MCP response';
+    }
+    function setConnected(value) {
+      document.getElementById('draftBtn').disabled = !value;
+      document.getElementById('approveBtn').disabled = !value || !lastPlanId;
+      document.getElementById('simulateBtn').disabled = !value;
+      document.querySelectorAll('.actionBtn').forEach((button) => { button.disabled = !value; });
+    }
+    function getEndpoint() {
+      const raw = endpointInput.value.trim();
+      if (!raw) throw new Error('Enter your MCP server URL first.');
+      const parsed = new URL(raw);
+      if (parsed.protocol !== 'https:' && parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') {
+        throw new Error('Use HTTPS for a public server, or localhost for local testing.');
+      }
+      return parsed.toString().replace(/\/+$/, '').endsWith('/mcp') ? parsed.toString().replace(/\/+$/, '') : parsed.toString().replace(/\/+$/, '') + '/mcp';
+    }
+    async function post(method, params, notification) {
+      const endpoint = getEndpoint();
+      const body = { jsonrpc: '2.0', method: method };
+      if (!notification) body.id = ++sequence;
+      if (params !== undefined) body.params = params;
+      const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream' };
+      if (initialized && method !== 'initialize') headers['MCP-Protocol-Version'] = protocolVersion;
+      const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
+      if (!response.ok) {
+        const raw = await response.text();
+        throw new Error('HTTP ' + response.status + ': ' + (raw || response.statusText));
+      }
+      if (notification || response.status === 202) return null;
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream')) {
+        const raw = await response.text();
+        const dataLine = raw.split(/\r?\n/).find((line) => line.startsWith('data:'));
+        if (!dataLine) throw new Error('The MCP server returned an empty event stream.');
+        const data = JSON.parse(dataLine.slice(5).trim());
+        if (data.error) throw new Error(data.error.message || 'MCP request failed.');
+        return data.result;
+      }
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message || 'MCP request failed.');
+      return data.result;
+    }
+    function unwrap(result) {
+      if (result && result.structuredContent) return result.structuredContent;
+      const textBlock = result && Array.isArray(result.content) && result.content.find((item) => item.type === 'text');
+      if (textBlock) {
+        try { return JSON.parse(textBlock.text); } catch { return textBlock.text; }
+      }
+      return result;
+    }
+    async function callTool(name, args) {
+      if (!initialized) throw new Error('Connect to the server first.');
+      if (availableTools.length && !availableTools.some((tool) => tool.name === name)) {
+        throw new Error('The server did not advertise the tool ' + name + '. Reconnect and discover tools again.');
+      }
+      const raw = await post('tools/call', { name, arguments: args || {} }, false);
+      const data = unwrap(raw);
+      show(data, 'tools/call → ' + name);
+      return data;
+    }
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      initialized = false; lastPlanId = null; setConnected(false);
+      const connectButton = document.getElementById('connectBtn');
+      connectButton.disabled = true; connectButton.textContent = 'Connecting…';
+      try {
+        const endpoint = getEndpoint();
+        endpointInput.value = endpoint;
+        localStorage.setItem('homerelay-mcp-endpoint', endpoint);
+        setStatus('Connecting', '');
+        const init = await post('initialize', {
+          protocolVersion,
+          capabilities: {},
+          clientInfo: { name: 'HomeRelay MCP Console', version: '1.0.0' }
+        }, false);
+        if (!init || !init.protocolVersion) throw new Error('The server response did not look like a valid MCP initialize response.');
+        initialized = true;
+        await post('notifications/initialized', {}, true);
+        const discovery = await post('tools/list', {}, false);
+        availableTools = discovery && Array.isArray(discovery.tools) ? discovery.tools : [];
+        badgeNode.replaceChildren();
+        [ 'MCP ' + init.protocolVersion, 'Streamable HTTP', availableTools.length + ' tools discovered' ].forEach((label) => {
+          const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = label; badgeNode.appendChild(badge);
+        });
+        setStatus('Connected · ' + availableTools.length + ' tools', 'good');
+        setConnected(true);
+        show({serverInfo:init.serverInfo, protocolVersion:init.protocolVersion, tools:availableTools.map((tool)=>({name:tool.name,title:tool.title,description:tool.description}))}, 'initialize → notifications/initialized → tools/list');
+      } catch (error) {
+        initialized = false; setStatus('Connection failed', 'bad');
+        show({error:error.message, hint:'Check that the backend is deployed, its URL ends with /mcp, and the backend allows the GitHub Pages origin.'}, 'Could not connect');
+      } finally {
+        connectButton.disabled = false; connectButton.textContent = 'Connect & discover tools';
+      }
+    });
+    document.getElementById('draftBtn').addEventListener('click', async () => {
+      const button = document.getElementById('draftBtn');
+      button.disabled = true;
+      try {
+        lastPlanId = null;
+        document.getElementById('approveBtn').disabled = true;
+        const data = await callTool('draft_household_plan', { request: document.getElementById('requestText').value.trim() });
+        lastPlanId = data && data.planId ? data.planId : null;
+        document.getElementById('approveBtn').disabled = !lastPlanId;
+        if (!lastPlanId) show(data, 'Draft returned, but no planId was found; check the MCP response.');
+        else show(data, 'draft_household_plan → awaiting explicit approval');
+      } catch (error) { show({error:error.message}, 'Draft plan failed'); }
+      finally { button.disabled = !initialized; }
+    });
+    document.getElementById('approveBtn').addEventListener('click', async () => {
+      if (!lastPlanId) return;
+      const planId = lastPlanId;
+      if (!window.confirm('Approve the reviewed proposal and add its tasks to the HomeRelay MCP demo ledger?')) return;
+      const button = document.getElementById('approveBtn');
+      button.disabled = true;
+      try {
+        const data = await callTool('approve_household_plan', { planId });
+        lastPlanId = null;
+        show(data, 'approve_household_plan → plan committed after confirmation');
+      } catch (error) {
+        show({error:error.message}, 'Approval failed');
+        document.getElementById('approveBtn').disabled = false;
+      }
+    });
+    document.querySelectorAll('.actionBtn').forEach((button) => button.addEventListener('click', async () => {
+      try { await callTool(button.dataset.tool, {}); }
+      catch (error) { show({error:error.message}, 'Tool call failed'); }
+    }));
+    document.getElementById('simulateBtn').addEventListener('click', async () => {
+      try { await callTool('simulate_routine', { routine: document.getElementById('routineSelect').value }); }
+      catch (error) { show({error:error.message}, 'Routine simulation failed'); }
+    });
+  </script>
+</body>
+</html>
